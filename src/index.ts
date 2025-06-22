@@ -1,6 +1,8 @@
 import express from "express";
 import mongoose from "mongoose";
 import userRoute from "./routes/userRoute";
+import productRoute from "./routes/productRoute";
+import { seedInitialProducts } from "./models/productService";
 
 
 const app = express();
@@ -9,7 +11,7 @@ app.use(express.json());
 
 app.use('/user', userRoute)//Elle dit à Express : Pour chaque requête HTTP
 //  qui commence par /user, utilise ce routeur (userRoute) pour traiter la suite de l'URL. 
-
+app.use("/product", productRoute); 
 mongoose
   .connect("mongodb://localhost:27017/ecommerce")
   .then(() => {
@@ -18,6 +20,8 @@ mongoose
   .catch((err) => {
     console.error("Error connecting to MongoDB:", err);
   });
+  // Seed the products to database
+  seedInitialProducts();
   app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
   });
