@@ -2,7 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import userRoute from "./routes/userRoute";
 import productRoute from "./routes/productRoute";
-import { seedInitialProducts } from "./models/productService";
+import { seedInitialProducts } from "./services/productService";
+import cartRoutes from "./routes/cartRoutes";
 
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.json());
 app.use('/user', userRoute)//Elle dit à Express : Pour chaque requête HTTP
 //  qui commence par /user, utilise ce routeur (userRoute) pour traiter la suite de l'URL. 
 app.use("/product", productRoute); 
+app.use("/cart",cartRoutes); // Importation et utilisation des routes du panier
 mongoose
   .connect("mongodb://localhost:27017/ecommerce")
   .then(() => {
