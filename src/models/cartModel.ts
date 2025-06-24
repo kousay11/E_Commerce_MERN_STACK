@@ -6,8 +6,10 @@ import { IProduct} from './productModel';
 const cardStatusEnum = ["active", "completed", "cancelled"];
 
 // Interface représentant un article dans le panier
-export interface ICartItem extends Document {
-    product: IProduct; // Produit associé à l'article du panier
+// extends Document impose que chaque item soit un document Mongoose complet 
+// on essaye de garder la structure simple pour représenter un article dans le panier
+export interface ICartItem {
+    product: mongoose.Types.ObjectId | IProduct; // Accepte l'ObjectId ou l'objet produit complet
     unitPrice: number; // Prix unitaire du produit au moment de l'ajout
     quantity: number;  // Quantité de ce produit dans le panier
 }
@@ -16,7 +18,7 @@ export interface ICartItem extends Document {
 export interface ICart extends Document {
     userId: ObjectId|string; // Référence à l'utilisateur propriétaire du panier
     items: ICartItem[];      // Liste des articles dans le panier
-    quantity: number;        // Quantité totale d'articles dans le panier
+    totalAmount: number;        // Quantité totale d'articles dans le panier
     status: "active" | "completed" | "cancelled"; // Statut du panier
 }
 
@@ -44,7 +46,7 @@ const cartSchema = new Schema<ICart>({
         required: true
     },
     items: [cartItemSchema], // Tableau d'articles du panier
-    quantity: {
+    totalAmount: {
         type: Number,
         required: true,
         default: 0

@@ -1,12 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserModel } from '../models/userModel';
+import { ExtendRequest } from '../types/extensedRequest';
 
-// Cette interface étend l'interface Request d'Express pour y ajouter une propriété 'user'.
-// Cela permet d'attacher l'utilisateur authentifié à la requête après validation du JWT.
-interface ExtendRequest extends Request {
-    user?: any;
-}
+
 
 // Middleware pour valider le JWT et authentifier l'utilisateur
 const validateJWT = async (req: ExtendRequest, res: Response, next: NextFunction): Promise<void> => {
