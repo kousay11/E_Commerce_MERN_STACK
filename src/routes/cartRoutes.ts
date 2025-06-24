@@ -1,5 +1,5 @@
 import express from 'express';
-import { addItemToCart, getActiveCartForUser } from '../services/cartService';
+import { addItemToCart, getActiveCartForUser, updateItemInCart } from '../services/cartService';
 import validateJWT from '../middlewares/validateJWT';
 import { ExtendRequest } from '../types/extensedRequest';
 
@@ -20,6 +20,14 @@ router.post('/items', validateJWT, async (req, res) => {
         const { productId, quantity } = req.body;
     const responce = await addItemToCart({productId,quantity, userId});
     res.status(responce.statusCode).send(responce.data);
+});
+// Route PUT pour mettre à jour un produit dans le panier de l'utilisateur
+router.put('/items', validateJWT, async (req, res) => {
+    const userId = (req as any).user._id;
+    const { itemId } = req.params;
+    const {productId,quantity}=req.body;
+    const responce = await updateItemInCart({ productId, quantity, userId });
+    res.status(200).send(responce.data);
 });
 
 

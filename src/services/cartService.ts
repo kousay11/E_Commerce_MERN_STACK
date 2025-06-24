@@ -57,3 +57,44 @@ export const addItemToCart = async ({productId, quantity, userId}: addItemToCart
 
    
 }
+interface updateItemInCart {
+    productId: any; 
+    quantity: number; 
+    userId: string; 
+}
+export const updateItemInCart = async ({productId, quantity, userId}: addItemToCart) => {
+    // Récupérer le panier actif de l'utilisateur
+    const cart = await getActiveCartForUser({userId});
+    // Chercher l'article à mettre à jour dans le panier
+    const existingCart = cart.items.find((p: any) => p.product.toString() === productId.toString());
+    // Récupérer les informations du produit depuis la base de données
+    const product = await ProductModel.findById(productId);
+    if (!existingCart) {
+        // Si l'article n'existe pas dans le panier, retourner une erreur
+        return {data: 'Item not found in the cart', statusCode: 404}; 
+    } 
+    if (!product) {
+        // Si le produit n'existe pas, retourner une erreur
+        return {data: 'Product not found', statusCode: 404};
+    }
+    // Vérifier que la quantité demandée ne dépasse pas le stock disponible
+    if (quantity > product.stock) {
+        return {data: 'Requested quantity exceeds available stock', statusCode: 400};
+    }
+    // Mettre à jour la quantité de l'article dans le panier
+    existingCart.quantity = quantity;
+    // Calculer le total du panier en excluant l'article mis à jour
+    const otherCartItems = cart.items.filter((p: any) => p.product.toString() !== productId.toString());
+    let total = otherCartItems.reduce((sum, product) => {
+        sum += product.quantity * product.unitPrice;
+        return sum;
+    }, 0);
+    // Ajouter le total de l'article mis à jour
+    total += existingCart.quantity * existingCart.unitPrice;
+    // Mettre à jour le montant total du panier
+    cart.totalAmount = total;
+    // Sauvegarder le panier mis à jour
+    const updatedcart = await cart.save();
+    // Retourner le panier mis à jour et le code de succès
+    return {data: updatedcart, statusCode: 200};
+}
