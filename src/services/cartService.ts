@@ -1,4 +1,5 @@
 import { CartModel, ICartItem } from '../models/cartModel';
+import { IOrderItem, OrderModel } from '../models/orderModel';
 import ProductModel from '../models/productModel';
 import mongoose from 'mongoose';
 
@@ -144,4 +145,57 @@ const calculateCartTotalItem = ({cartItems}:{cartItems: ICartItem[];}) => {
         return sum;
     }, 0);
     return total;
+}
+interface checkoutCart {
+    userId: string; // Identifiant de l'utilisateur dont on veut finaliser le panier
+    address: string; // Adresse de livraison, optionnelle
+}
+export const checkoutCart = async ({userId, address}: checkoutCart) => {
+    // Vérifier que l'adresse de livraison est fournie
+    if (!address) {
+        return {data: 'Shipping address is required', statusCode: 400};
+    }
+    // Récupérer le panier actif de l'utilisateur
+    const cart = await getActiveCartForUser({userId});
+    // Préparer un tableau pour stocker les articles de la commande
+    const orderItems: IOrderItem[] = [];
+    // Parcourir chaque article du panier
+    for (const item of cart.items) {
+        // Récupérer les informations du produit associé à l'article
+        const product = await ProductModel.findById(item.product);
+        if (!product) {
+            // Si le produit n'existe pas, retourner une erreur
+            return {data: 'Product not found', statusCode: 404};
+        }
+        // Créer un objet représentant l'article de la commande
+        const orderItem = {
+            productTitle: product.title, // Titre du produit
+            productImage: product.image, // Image du produit
+            productPrice: item.unitPrice, // Prix unitaire au moment de l'achat
+            quantity: item.quantity // Quantité achetée
+        };
+        // (Optionnel) Mettre à jour le stock du produit ici si besoin
+
+        // Ajouter l'article à la liste des articles de la commande
+        orderItems.push(orderItem);
+    }
+    // Créer la commande dans la base de données
+    const order = await OrderModel.create({
+        orderItems, // Liste des articles commandés
+        total: cart.totalAmount, // Montant total de la commande
+        address, // Adresse de livraison
+        userId // Identifiant de l'utilisateur
+    });
+    if (!order) {
+        // Si la création de la commande échoue, retourner une erreur
+        return {data: 'Failed to create order', statusCode: 500}
+    }
+
+    // Sauvegarder la commande
+    await order.save();
+    // Mettre à jour le statut du panier à "completed" pour indiquer qu'il a été finalisé
+    cart.status = 'completed';
+    await cart.save();
+    // Retourner la commande créée et le code de succès
+    return {data: order, statusCode: 201};
 }
