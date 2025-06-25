@@ -1,5 +1,5 @@
 import express from 'express';
-import { addItemToCart, getActiveCartForUser, updateItemInCart } from '../services/cartService';
+import { addItemToCart, clearCart, deleteItemInCart, getActiveCartForUser, updateItemInCart } from '../services/cartService';
 import validateJWT from '../middlewares/validateJWT';
 import { ExtendRequest } from '../types/extensedRequest';
 
@@ -29,6 +29,18 @@ router.put('/items', validateJWT, async (req, res) => {
     const responce = await updateItemInCart({ productId, quantity, userId });
     res.status(200).send(responce.data);
 });
-
+// Route DELETE pour supprimer un produit du panier de l'utilisateur
+router.delete('/items/:productId', validateJWT, async (req, res) => {
+    const userId = (req as any).user._id;
+    const { productId } = req.params;
+    const responce = await deleteItemInCart({ productId, userId });    
+    res.status(200).send(responce.data);
+})
+router.delete('/', validateJWT, async (req:ExtendRequest, res) => {
+    const userId = req?.user?._id;
+    // Appel du service pour supprimer le panier actif de l'utilisateur
+    const responce = await clearCart({ userId });
+    res.status(200).send(responce.data);
+})
 
 export default router;

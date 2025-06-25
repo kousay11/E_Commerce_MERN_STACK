@@ -1,4 +1,4 @@
-import { CartModel } from '../models/cartModel';
+import { CartModel, ICartItem } from '../models/cartModel';
 import ProductModel from '../models/productModel';
 import mongoose from 'mongoose';
 
@@ -83,12 +83,9 @@ export const updateItemInCart = async ({productId, quantity, userId}: addItemToC
     }
     // Mettre à jour la quantité de l'article dans le panier
     existingCart.quantity = quantity;
-    // Calculer le total du panier en excluant l'article mis à jour
+    // Filtrer tous les articles du panier sauf celui dont l'identifiant correspond à productId
     const otherCartItems = cart.items.filter((p: any) => p.product.toString() !== productId.toString());
-    let total = otherCartItems.reduce((sum, product) => {
-        sum += product.quantity * product.unitPrice;
-        return sum;
-    }, 0);
+    let total = calculateCartTotalItem({cartItems: otherCartItems});
     // Ajouter le total de l'article mis à jour
     total += existingCart.quantity * existingCart.unitPrice;
     // Mettre à jour le montant total du panier
@@ -97,4 +94,54 @@ export const updateItemInCart = async ({productId, quantity, userId}: addItemToC
     const updatedcart = await cart.save();
     // Retourner le panier mis à jour et le code de succès
     return {data: updatedcart, statusCode: 200};
+}
+interface deleteItemInCart {
+    productId: any; 
+    userId: string; 
+}
+export const deleteItemInCart = async ({productId, userId}: deleteItemInCart) => {
+    // Récupérer le panier actif de l'utilisateur
+    const cart = await getActiveCartForUser({userId});
+    // Chercher l'article à supprimer dans le panier
+    const existingCart = cart.items.find((p: any) => p.product.toString() === productId.toString());
+    if (!existingCart) {
+        // Si l'article n'existe pas dans le panier, retourner une erreur
+        return {data: 'Item not found in the cart', statusCode: 404}; 
+    }
+    // Calculer le montant total du panier en excluant l'article supprimé
+    // Filtrer tous les articles du panier sauf celui dont l'identifiant correspond à productId
+    const otherCartItems = cart.items.filter((p: any) => p.product.toString() !== productId.toString());
+    let total =calculateCartTotalItem({cartItems: otherCartItems});
+    // Mettre à jour le montant total du panier
+    cart.totalAmount = total;
+    // Supprimer l'article du panier
+    cart.items = otherCartItems;
+    // Sauvegarder le panier mis à jour
+    const updatedcart = await cart.save();
+    // Retourner le panier mis à jour et le code de succès
+    return {data: updatedcart, statusCode: 200};
+}
+ interface clearCart {
+    userId: string; // Identifiant de l'utilisateur dont on veut vider le panier
+}
+export const clearCart = async ({userId}: clearCart) => {
+    // Récupérer le panier actif de l'utilisateur
+    const cart = await getActiveCartForUser({userId});
+    // Vider les articles du panier
+    cart.items = [];
+    // Réinitialiser le montant total du panier à 0
+    cart.totalAmount = 0;
+    // Sauvegarder le panier mis à jour
+    const updatedcart = await cart.save();
+    // Retourner le panier mis à jour et le code de succès
+    return {data: updatedcart, statusCode: 200};
+}   
+
+// Fonction utilitaire pour calculer le montant total d'un tableau d'articles du panier
+const calculateCartTotalItem = ({cartItems}:{cartItems: ICartItem[];}) => {
+    const total = cartItems.reduce((sum, product) => {
+        sum += product.quantity * product.unitPrice;
+        return sum;
+    }, 0);
+    return total;
 }
