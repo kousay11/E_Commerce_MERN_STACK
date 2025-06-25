@@ -50,5 +50,5 @@ export const registerUser = async ({firstName,lastName,email,password}: Register
 }         
 const generateJWT = (data: any) => {
     return jwt.sign(data, process.env.JWT_SECRET ||
-        '0nTquJhcLzE6a3K8WEMkcBb54U1rZAbe', { expiresIn: '1h' });
+        '', { expiresIn: '1h' });
 }

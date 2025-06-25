@@ -24,7 +24,8 @@ const validateJWT = async (req: ExtendRequest, res: Response, next: NextFunction
     }
 
     // Vérifie et décode le token JWT
-    jwt.verify(token, '0nTquJhcLzE6a3K8WEMkcBb54U1rZAbe', async (err, payload) => {
+    jwt.verify(token, process.env.JWT_SECRET ||
+        '', async (err, payload) => {
         if (err) {
             // Token invalide ou expiré
             res.status(403).send('Invalid token payload');
