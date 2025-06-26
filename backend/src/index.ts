@@ -5,11 +5,12 @@ import userRoute from "./routes/userRoute";
 import productRoute from "./routes/productRoute";
 import { seedInitialProducts } from "./services/productService";
 import cartRoutes from "./routes/cartRoutes";
-
+import cors from "cors"; // Importation de cors pour gérer les requêtes cross-origin
 
 const app = express();
 const port = 3000;
 app.use(express.json());
+app.use(cors()); // Utilisation de cors pour permettre les requêtes cross-origin
 //console.log(process.env.Database_URL);
 app.use('/user', userRoute)//Elle dit à Express : Pour chaque requête HTTP
 //  qui commence par /user, utilise ce routeur (userRoute) pour traiter la suite de l'URL. 
