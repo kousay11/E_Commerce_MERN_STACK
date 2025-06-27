@@ -64,18 +64,25 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
             localStorage.setItem("username", username);
             localStorage.setItem("token", token);
     };
-    
+    const isAuthenticated =!!token; // Vérifie si l'utilisateur est connecté
 
-    // TODO: Implémenter la fonction logout pour nettoyer l'état et localStorage
-    // const logout = () => {
-    //     setusername(null);
-    //     setToken(null);
-    //     localStorage.removeItem("username");
-    //     localStorage.removeItem("token");
-    // };
+    /**
+     * Fonction pour déconnecter un utilisateur
+     * 
+     * Actions :
+     * - Remet à null l'état d'authentification
+     * - Supprime les données de localStorage
+     * - L'utilisateur sera redirigé vers l'état non-connecté
+     */
+    const logout = () => {
+        setusername(null);
+        setToken(null);
+        localStorage.removeItem("username");
+        localStorage.removeItem("token");
+    };
 
     return (
-        <AuthContext.Provider value={{ username, token,login }}>
+        <AuthContext.Provider value={{ username, token,login,logout,isAuthenticated }}>
             {children}
         </AuthContext.Provider>
     );

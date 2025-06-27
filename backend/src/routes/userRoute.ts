@@ -21,9 +21,9 @@ router.post('/login', async (req, res) => {
     try {
         const {email,password} = req.body; 
         const {statusCode,data} = await logInUser({email,password});  
-        res.status(statusCode).json(data);
+        res.status(statusCode).json({ message: data });
     } catch (error) {
-        res.status(500).send({ error: 'Internal server error during login' });
+        res.status(500).json({ error: 'Internal server error during login' });
     }    
 });
 

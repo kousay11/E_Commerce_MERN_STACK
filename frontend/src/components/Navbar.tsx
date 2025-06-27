@@ -23,9 +23,10 @@ import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 // Import du hook d'authentification pour accéder aux données utilisateur
 import { useAuthContext } from '../context/Auth/AuthContext';
+import { Button, Grid } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 // Configuration des options du menu utilisateur
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 /**
  * Composant Navbar - Barre de navigation responsive
@@ -37,11 +38,11 @@ const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
  */
 function Navbar() {
   // Récupération des données d'authentification depuis le contexte
-  const {username,token} = useAuthContext();
+  const {username,isAuthenticated} = useAuthContext();
   
   // État local pour gérer l'ouverture/fermeture du menu utilisateur
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-
+const navigate = useNavigate();
   // Fonction pour ouvrir le menu utilisateur
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
@@ -51,9 +52,11 @@ function Navbar() {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+  const handleLogin = () => {
+navigate('/login');
+  }
   
-  // Log pour le débogage - affiche les données d'authentification
-  console.log("from navbar:", username,token);
+  
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
@@ -83,11 +86,14 @@ function Navbar() {
          
           {/* Section droite : Menu utilisateur */}
           <Box sx={{ flexGrow: 0 }}>
-            {/* Bouton avatar avec tooltip */}
+            {isAuthenticated ? <>
             <Tooltip title="Open settings">
+              <Grid container direction="row" alignItems="center" gap={2}>      
+              <Typography >{username}</Typography>
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                <Avatar alt={username|| ''}  src="/static/images/avatar/2.jpg" />
               </IconButton>
+              </Grid>
             </Tooltip>
             {/* Menu déroulant des paramètres utilisateur */}
             <Menu
@@ -107,12 +113,16 @@ function Navbar() {
               onClose={handleCloseUserMenu}
             >
               {/* Génération dynamique des éléments du menu */}
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+             <MenuItem  onClick={handleCloseUserMenu}>
+                  <Typography sx={{ textAlign: 'center' }}></Typography>
                 </MenuItem>
-              ))}
+              <MenuItem  onClick={handleCloseUserMenu}>
+                  <Typography sx={{ textAlign: 'center' }}></Typography>
+                </MenuItem>
             </Menu>
+            </>: <Button variant='contained' color='success'onClick={handleLogin}>Login</Button>}
+            {/* Bouton avatar avec tooltip */}
+            
           </Box>
           </Box>
         </Toolbar>

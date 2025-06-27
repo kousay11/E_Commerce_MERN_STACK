@@ -20,11 +20,15 @@ import { createContext, useContext } from "react"
  * @property username - Nom d'utilisateur (peut être null si non connecté)
  * @property token - Token JWT d'authentification (peut être null si non connecté)
  * @property login - Fonction pour connecter un utilisateur avec ses identifiants
+ * @property logout - Fonction pour déconnecter l'utilisateur et nettoyer la session
+ * @property isAuthenticated - Booléen indiquant si l'utilisateur est connecté
  */
 interface AuthContextType {
     username: string | null;
     token: string | null;
     login: (username:string, token:string) => void;
+    logout: () => void;
+    isAuthenticated: boolean;
 }
 
 /**
@@ -32,8 +36,16 @@ interface AuthContextType {
  * - username: null (utilisateur non connecté)
  * - token: null (pas de token d'authentification)
  * - login: fonction vide par défaut
+ * - logout: fonction vide par défaut
+ * - isAuthenticated: false (utilisateur non connecté par défaut)
  */
-export const AuthContext = createContext<AuthContextType>({username: null, token: null, login: () => {}});
+export const AuthContext = createContext<AuthContextType>({
+    username: null, 
+    token: null, 
+    login: () => {}, 
+    logout: () => {},
+    isAuthenticated: false
+});
 
 /**
  * Hook personnalisé pour accéder aux données d'authentification
@@ -42,7 +54,7 @@ export const AuthContext = createContext<AuthContextType>({username: null, token
  * @throws Error si utilisé en dehors d'un AuthProvider
  * 
  * Usage:
- * const { username, token, login } = useAuthContext();
+ * const { username, token, login, logout, isAuthenticated } = useAuthContext();
  */
 export const useAuthContext = () => {
     const context = useContext(AuthContext);
