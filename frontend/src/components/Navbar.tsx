@@ -38,7 +38,7 @@ import { useNavigate } from 'react-router-dom';
  */
 function Navbar() {
   // Récupération des données d'authentification depuis le contexte
-  const {username,isAuthenticated} = useAuthContext();
+  const {username,isAuthenticated,logout} = useAuthContext();
   
   // État local pour gérer l'ouverture/fermeture du menu utilisateur
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
@@ -55,6 +55,12 @@ const navigate = useNavigate();
   const handleLogin = () => {
 navigate('/login');
   }
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+    handleCloseUserMenu();
+  }
+
   
   
   return (
@@ -114,10 +120,10 @@ navigate('/login');
             >
               {/* Génération dynamique des éléments du menu */}
              <MenuItem  onClick={handleCloseUserMenu}>
-                  <Typography sx={{ textAlign: 'center' }}></Typography>
+                  <Typography sx={{ textAlign: 'center' }}>My orders</Typography>
                 </MenuItem>
-              <MenuItem  onClick={handleCloseUserMenu}>
-                  <Typography sx={{ textAlign: 'center' }}></Typography>
+              <MenuItem  onClick={handleLogout}>
+                  <Typography sx={{ textAlign: 'center' }}>Logout</Typography>
                 </MenuItem>
             </Menu>
             </>: <Button variant='contained' color='success'onClick={handleLogin}>Login</Button>}
