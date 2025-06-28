@@ -18,6 +18,9 @@ import { useState, type FC,type PropsWithChildren } from "react";
 // Import du contexte d'authentification
 import { AuthContext } from "./AuthContext";
 
+const USERNAME_KEY = "username";
+const TOKEN_KEY= "token";
+
 /**
  * Composant AuthProvider - Fournisseur du contexte d'authentification
  * 
@@ -61,8 +64,8 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
          setusername(username);
             setToken(token);
             // Sauvegarde dans localStorage pour maintenir la session
-            localStorage.setItem("username", username);
-            localStorage.setItem("token", token);
+            localStorage.setItem(USERNAME_KEY, username);
+            localStorage.setItem(TOKEN_KEY, token);
     };
     const isAuthenticated =!!token; // Vérifie si l'utilisateur est connecté
 
@@ -77,8 +80,8 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     const logout = () => {
         setusername(null);
         setToken(null);
-        localStorage.removeItem("username");
-        localStorage.removeItem("token");
+        localStorage.removeItem(USERNAME_KEY);
+        localStorage.removeItem(TOKEN_KEY);
     };
 
     return (

@@ -42,7 +42,9 @@ function Navbar() {
   
   // État local pour gérer l'ouverture/fermeture du menu utilisateur
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-const navigate = useNavigate();
+  // Hook pour la navigation
+  // Permet de naviguer entre les pages de l'application
+  const navigate = useNavigate();
   // Fonction pour ouvrir le menu utilisateur
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
@@ -52,9 +54,13 @@ const navigate = useNavigate();
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+  // Fonction pour rediriger vers la page de connexion
+  // si l'utilisateur n'est pas connecté
   const handleLogin = () => {
 navigate('/login');
   }
+  // Fonction pour déconnecter l'utilisateur
+  // et rediriger vers la page d'accueil
   const handleLogout = () => {
     logout();
     navigate('/');
