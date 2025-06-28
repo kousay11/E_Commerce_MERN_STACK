@@ -7,23 +7,42 @@ interface createCartForUser {
   userId: string;
 }
 
+// Fonction pour créer un nouveau panier vide pour un utilisateur
 const createCartForUser = async ({userId}: createCartForUser) => {
+    // Création d'un nouveau panier avec montant total initial à 0
     const Cart = await CartModel.create({userId, totalAmount: 0});
+    // Sauvegarde du panier en base de données
     await Cart.save();
     return Cart;
-
 }
-interface getActiveCartForUser {
+interface GetActiveCartForUser {
     userId: string;
+    populateProduct?: boolean; // Optionnel, pour peupler les détails des produits dans le panier
 }
-export const getActiveCartForUser = async ({userId}:createCartForUser) => {
+export const getActiveCartForUser = async ({
+  userId,
+  populateProduct,
+}: GetActiveCartForUser) => {
+  let cart;
+  
+  // Si populateProduct est true, on récupère le panier avec les détails des produits
+  if (populateProduct) {
+    cart = await CartModel
+      .findOne({ userId, status: "active" })
+      .populate("items.product"); // Population des références produits avec leurs détails complets
+  } else {
+    // Sinon, on récupère le panier sans les détails des produits (plus rapide)
+    cart = await CartModel.findOne({ userId, status: "active" });
+  }
 
-    let cart = await CartModel.findOne({userId, status: 'active'});
-    if (!cart) {
-        cart = await createCartForUser({userId});
-    }
-    return cart;
-}
+  // Si aucun panier actif n'existe, on en crée un nouveau pour l'utilisateur
+  if (!cart) {
+    cart = await createCartForUser({ userId });
+  }
+
+  return cart;
+};
+
 interface addItemToCart {
     productId: any; 
     quantity: number; // Quantity to add
@@ -31,32 +50,40 @@ interface addItemToCart {
 }
 export const addItemToCart = async ({productId, quantity, userId}: addItemToCart) => {
     try {
+        // Récupération ou création du panier actif pour l'utilisateur
         const cart = await getActiveCartForUser({userId});
+        
+        // Vérification si le produit existe déjà dans le panier
         const existingItem = cart.items.find((p: any) => p.product.toString() === productId.toString());
 
         if (existingItem) {
+            // Si le produit existe déjà, retourner une erreur
             return {data: 'Item already exists in the cart', statusCode: 400}; 
         } else {
-            // Utilisation directe de ProductModel importé
+            // Recherche du produit dans la base de données pour vérifier son existence
             const product = await ProductModel.findById(productId);
             if (!product) {
                 return {data: 'Product not found', statusCode: 404};
             }
-            // Vérification de la quantité demandée par rapport au stock du produit
+            // Vérification de la disponibilité du stock avant ajout
             if (quantity > product.stock) {
                 return {data: 'Requested quantity exceeds available stock', statusCode: 400};
             }
+            // Ajout du nouvel article au panier avec les informations du produit
             cart.items.push({
-                product: product._id as mongoose.Types.ObjectId, // Cast explicite pour éviter l'erreur de type
-                unitPrice: product.price,
-                quantity: quantity
+                product: product._id as mongoose.Types.ObjectId, // Référence vers le produit
+                unitPrice: product.price, // Prix unitaire au moment de l'ajout
+                quantity: quantity // Quantité demandée
             });
-            // Mise à jour de la quantité totale du panier
+            // Mise à jour du montant total du panier
             cart.totalAmount += product.price*quantity;
-            const updatedcart = await cart.save();
-            return {data: updatedcart, statusCode: 200};
+            // Sauvegarde du panier mis à jour en base de données
+            await cart.save();
+            // Retour du panier mis à jour avec les produits populés pour l'affichage
+            return {data: await getActiveCartForUser({userId,populateProduct:true}), statusCode: 200};
         }
     } catch (error) {
+        // Gestion des erreurs lors de l'ajout
         return {data: 'Erreur lors de l\'ajout au panier', statusCode: 500, error};
     }
 }
@@ -95,9 +122,12 @@ export const updateItemInCart = async ({productId, quantity, userId}: addItemToC
         // Mettre à jour le montant total du panier
         cart.totalAmount = total;
         // Sauvegarder le panier mis à jour
-        const updatedcart = await cart.save();
-        // Retourner le panier mis à jour et le code de succès
-        return {data: updatedcart, statusCode: 200};
+         await cart.save();
+
+        return {
+            data: await getActiveCartForUser({ userId, populateProduct: true }),
+            statusCode: 200,
+        };
     } catch (error) {
         return {data: 'Erreur lors de la mise à jour du panier', statusCode: 500, error};
     }
@@ -125,9 +155,9 @@ export const deleteItemInCart = async ({productId, userId}: deleteItemInCart) =>
         // Supprimer l'article du panier
         cart.items = otherCartItems;
         // Sauvegarder le panier mis à jour
-        const updatedcart = await cart.save();
+        await cart.save();
         // Retourner le panier mis à jour et le code de succès
-        return {data: updatedcart, statusCode: 200};
+        return {data: await getActiveCartForUser({ userId, populateProduct: true }), statusCode: 200};
     } catch (error) {
         return {data: 'Erreur lors de la suppression du produit du panier', statusCode: 500, error};
     }
@@ -144,9 +174,9 @@ export const clearCart = async ({userId}: clearCart) => {
         // Réinitialiser le montant total du panier à 0
         cart.totalAmount = 0;
         // Sauvegarder le panier mis à jour
-        const updatedcart = await cart.save();
+       await cart.save();
         // Retourner le panier mis à jour et le code de succès
-        return {data: updatedcart, statusCode: 200};
+        return {data: await getActiveCartForUser({ userId, populateProduct: true }), statusCode: 200};
     } catch (error) {
         return {data: 'Erreur lors de la suppression du panier', statusCode: 500, error};
     }

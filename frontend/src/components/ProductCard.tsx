@@ -10,7 +10,7 @@ interface Props {
   _id: string;
   title: string;
   image: string;
-  price: string;
+  price: number; // Changé de string à number pour correspondre aux données du backend
 }
 
 export default function ProductCard({ _id, title, image, price }: Props) {
