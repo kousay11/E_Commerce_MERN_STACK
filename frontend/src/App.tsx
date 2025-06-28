@@ -4,6 +4,8 @@ import Navbar from "./components/Navbar"
 import RegisterPage from "./pages/RegisterPage"
 import AuthProvider from "./context/Auth/AuthProvider"
 import LoginPage from "./pages/LoginPage"
+import CartPage from "./pages/CartPage"
+import ProtectedRoute from "./components/ProtectedRoute"
 function App() {
 
   return (
@@ -14,6 +16,8 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/Register" element={<RegisterPage />} />
       <Route path="/Login" element={<LoginPage />} />
+      {/* Route protégée pour le panier */}
+      {<Route path="/Cart" element={<ProtectedRoute><CartPage/></ProtectedRoute>} /> }
       {/* Ajoutez d'autres routes ici si nécessaire */}    
     </Routes>
    </BrowserRouter>

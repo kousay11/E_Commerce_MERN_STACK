@@ -21,9 +21,10 @@ import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
+import ShoppingCart from '@mui/icons-material/ShoppingCart';
 // Import du hook d'authentification pour accéder aux données utilisateur
 import { useAuthContext } from '../context/Auth/AuthContext';
-import { Button, Grid } from '@mui/material';
+import { Badge, Button, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 // Configuration des options du menu utilisateur
@@ -66,6 +67,11 @@ navigate('/login');
     navigate('/');
     handleCloseUserMenu();
   }
+  // Fonction pour rediriger vers la page du panier
+  // pour afficher les articles ajoutés au panier
+  const handleCart = () => {
+    navigate('/cart');
+  }
 
   
   
@@ -97,7 +103,12 @@ navigate('/login');
        
          
           {/* Section droite : Menu utilisateur */}
-          <Box sx={{ flexGrow: 0 }}>
+          <Box  gap={4} display='flex' flexDirection='row' alignItems={'center'} justifyContent={'center'}>
+           <IconButton aria-label="cart" color ="inherit" onClick={handleCart}>
+            <Badge badgeContent={4} color="secondary">
+              <ShoppingCart />
+            </Badge>
+          </IconButton>
             {isAuthenticated ? <>
             <Tooltip title="Open settings">
               <Grid container direction="row" alignItems="center" gap={2}>      
