@@ -11,7 +11,7 @@ const validateJWT = async (req: ExtendRequest, res: Response, next: NextFunction
     const authorizationHeader = req.get('authorization');
     if (!authorizationHeader) {
         // Aucun token fourni
-        res.status(403).send('No token provided');
+        res.status(403).json({ error: 'No token provided' });
         return;
     }
 
@@ -19,7 +19,7 @@ const validateJWT = async (req: ExtendRequest, res: Response, next: NextFunction
     const token = authorizationHeader.split(" ")[1];
     if (!token) {
         // Format de token invalide
-        res.status(403).send('Invalid token format');
+        res.status(403).json({ error: 'Invalid token format' });
         return;
     }
 
@@ -28,12 +28,12 @@ const validateJWT = async (req: ExtendRequest, res: Response, next: NextFunction
         '', async (err, payload) => {
         if (err) {
             // Token invalide ou expiré
-            res.status(403).send('Invalid token payload');
+            res.status(403).json({ error: 'Invalid token payload' });
             return;
         }
         if (!payload) {
             // Payload du token manquant
-            res.status(403).send('Invalid token payload');
+            res.status(403).json({ error: 'Invalid token payload' });
             return;
         }
 
@@ -43,7 +43,7 @@ const validateJWT = async (req: ExtendRequest, res: Response, next: NextFunction
         const user = await UserModel.findOne({ email: userPayload.email });
         if (!user) {
             // Utilisateur non trouvé
-            res.status(404).send('User not found');
+            res.status(404).json({ error: 'User not found' });
             return;
         }
 

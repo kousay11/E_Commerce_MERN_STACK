@@ -82,6 +82,10 @@ function Navbar() {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+  const handleMyOrders = () => {
+        handleCloseUserMenu();
+        navigate('/my_orders');
+  }
   
   /**
    * Fonction pour rediriger vers la page de connexion
@@ -402,7 +406,7 @@ function Navbar() {
                         >
                           {/* Option : Mes commandes */}
                           <MenuItem 
-                            onClick={handleCloseUserMenu}
+                            onClick={handleMyOrders}
                             sx={{
                               py: 1.5,
                               px: 2,
@@ -418,7 +422,7 @@ function Navbar() {
                               color: '#333', 
                               fontWeight: 500,
                               fontFamily: 'Inter, sans-serif'
-                            }}>
+                              }}>
                               Mes commandes
                             </Typography>
                           </MenuItem>

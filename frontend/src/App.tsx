@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage"
 import CartPage from "./pages/CartPage"
 import ProtectedRoute from "./components/ProtectedRoute"
 import CartProvider from "./context/Cart/CartProvider"
+import MyOrdersPage from "./pages/MyOrdersPage"
 function App() {
 
   return (
@@ -20,7 +21,7 @@ function App() {
       <Route path="/Login" element={<LoginPage />} />
       {/* Route protégée pour le panier */}
       {<Route path="/Cart" element={<ProtectedRoute><CartPage/></ProtectedRoute>} /> }
-      {/* Ajoutez d'autres routes ici si nécessaire */}    
+      {<Route path="/my_orders" element={<ProtectedRoute><MyOrdersPage/></ProtectedRoute>} /> }
     </Routes>
    </BrowserRouter>
    </CartProvider>

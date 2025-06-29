@@ -13,6 +13,7 @@
  */
 
 import { createContext, useContext } from "react"
+import type { Order } from "../../types/Order";
 
 /**
  * Interface définissant la structure des données d'authentification
@@ -26,9 +27,12 @@ import { createContext, useContext } from "react"
 interface AuthContextType {
     username: string | null;
     token: string | null;
+    myOrders: Order[]; // Tableau pour stocker les commandes de l'utilisateur
     login: (username:string, token:string) => void;
     logout: () => void;
     isAuthenticated: boolean;
+    getMyOrders: () => void; // Fonction pour récupérer les commandes de l'utilisateur
+    clearStorageAndLogout: () => void; // Fonction pour nettoyer le stockage local et déconnecter l'utilisateur
 }
 
 /**
@@ -42,9 +46,12 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType>({
     username: null, 
     token: null, 
+    myOrders: [],
     login: () => {}, 
     logout: () => {},
-    isAuthenticated: false
+    isAuthenticated: false,
+    getMyOrders: () => {},
+    clearStorageAndLogout: () => {}
 });
 
 /**

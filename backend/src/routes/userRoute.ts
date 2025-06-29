@@ -1,5 +1,7 @@
 import express from 'express';
-import { logInUser, registerUser } from '../services/userService';
+import { getMyOrders, logInUser, registerUser } from '../services/userService';
+import validateJWT from '../middlewares/validateJWT';
+import { ExtendRequest } from '../types/extensedRequest';
 
 const router = express.Router();
 
@@ -26,5 +28,13 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ error: 'Internal server error during login' });
     }    
 });
-
+router.get('/my_orders',validateJWT, async (req:ExtendRequest, res) => {
+    try {
+            const userId = req?.user?._id;
+            const {statusCode,data} = await getMyOrders({ userId});
+            res.status(statusCode).json(data);
+        } catch (error) {
+            res.status(500).json({ error: 'Erreur lors de la récupération des commandes', details: error });
+        }
+})
 export default router;
