@@ -34,12 +34,44 @@ const TOKEN_KEY= "token";
  * - Fournit une fonction login pour connecter un utilisateur
  * - Enveloppe l'application pour partager ces données avec tous les composants
  * - Restaure automatiquement la session depuis localStorage
+ * - Décode le JWT pour afficher le vrai nom d'utilisateur
  * 
  * @param children - Composants enfants qui auront accès au contexte
  */
 const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
-    // État pour le nom d'utilisateur - récupéré depuis localStorage au démarrage
-    const [username, setusername] = useState<string|null>(localStorage.getItem("username"));
+    // Fonction pour décoder le token et extraire le nom d'utilisateur
+    const getUsernameFromToken = (token: string): string | null => {
+        try {
+            const [, payload] = token.split('.');
+            const decodedPayload = JSON.parse(atob(payload));
+            return `${decodedPayload.firstName} ${decodedPayload.lastName}`;
+        } catch (error) {
+            console.error('Erreur lors du décodage du token:', error);
+            return null;
+        }
+    };
+
+    // Initialisation intelligente: décoder le token existant si possible
+    const initializeUser = () => {
+        const storedToken = localStorage.getItem(TOKEN_KEY);
+        const storedUsername = localStorage.getItem(USERNAME_KEY);
+        
+        if (storedToken) {
+            const decodedUsername = getUsernameFromToken(storedToken);
+            if (decodedUsername) {
+                // Mettre à jour le localStorage avec le vrai nom si nécessaire
+                if (storedUsername !== decodedUsername) {
+                    localStorage.setItem(USERNAME_KEY, decodedUsername);
+                }
+                return decodedUsername;
+            }
+        }
+        
+        return storedUsername;
+    };
+
+    // État pour le nom d'utilisateur - initialisé intelligemment
+    const [username, setusername] = useState<string|null>(initializeUser());
     // État pour le token JWT - récupéré depuis localStorage au démarrage
     const [token, setToken] = useState<string|null>(localStorage.getItem("token"));
 
@@ -61,19 +93,37 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     /**
      * Fonction pour connecter un utilisateur
      * 
-     * @param username - Nom d'utilisateur à connecter
+     * @param email - Email de l'utilisateur (temporaire pour compatibilité)
      * @param token - Token JWT reçu du serveur
      * 
      * Actions :
-     * - Met à jour l'état React
+     * - Décode le JWT pour extraire le firstName et lastName
+     * - Met à jour l'état React avec le vrai nom d'utilisateur
      * - Sauvegarde dans localStorage pour persistance
      */
-     const login = useCallback((username:string, token:string) => {
-         setusername(username);
-            setToken(token);
-            // Sauvegarde dans localStorage pour maintenir la session
-            localStorage.setItem(USERNAME_KEY, username);
-            localStorage.setItem(TOKEN_KEY, token);
+     const login = useCallback((email: string, token: string) => {
+         try {
+             // Décoder le JWT pour extraire les informations utilisateur
+             const [, payload] = token.split('.');
+             const decodedPayload = JSON.parse(atob(payload));
+             
+             // Construire le nom d'affichage à partir du firstName et lastName
+             const displayName = `${decodedPayload.firstName} ${decodedPayload.lastName}`;
+             
+             setusername(displayName);
+             setToken(token);
+             
+             // Sauvegarde dans localStorage pour maintenir la session
+             localStorage.setItem(USERNAME_KEY, displayName);
+             localStorage.setItem(TOKEN_KEY, token);
+         } catch (error) {
+             console.error('Erreur lors du décodage du token:', error);
+             // Fallback vers l'email si le décodage échoue
+             setusername(email);
+             setToken(token);
+             localStorage.setItem(USERNAME_KEY, email);
+             localStorage.setItem(TOKEN_KEY, token);
+         }
     }, []);
     const isAuthenticated =!!token; // Vérifie si l'utilisateur est connecté
 

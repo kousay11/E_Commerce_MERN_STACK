@@ -72,17 +72,15 @@ const MyOrdersPage = () => {
     };
 
     const getStatusColor = (status?: string) => {
-        switch (status) {
-            case 'Livrée':
-            case 'livrée':
+        switch (status?.toLowerCase()) {
             case 'accompli':
             case 'completed':
             case 'livré':
+            case 'livrée':
                 return 'success';
-            case 'En Cours':
-            case 'en cours':
             case 'en_cours':
             case 'pending':
+            case 'en cours':
                 return 'warning';
             case 'cancelled':
             case 'annulé':
@@ -96,16 +94,13 @@ const MyOrdersPage = () => {
     };
 
     const getStatusText = (status?: string) => {
-        switch (status) {
-            case 'Livrée':
-            case 'livrée':
+        switch (status?.toLowerCase()) {
             case 'accompli':
             case 'completed':
-                return 'Livrée';
-            case 'En Cours':
-            case 'en cours':
+                return 'Accompli';
             case 'en_cours':
             case 'pending':
+            case 'en cours':
                 return 'En cours';
             case 'cancelled':
             case 'annulé':
