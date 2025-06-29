@@ -22,6 +22,41 @@ const CartProvider: FC<PropsWithChildren> = ({ children }) => {
   // État local pour gérer les erreurs (utilisé dans les fonctions async)
   const [, setError] = useState("");
   
+   useEffect(() => {
+    if (!token) {
+      return;
+    }
+
+    const fetchCart = async () => {
+      const response = await fetch(`${Base_URL}/cart`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        setError("Failed to fetch user cart. Please try again");
+      }
+
+      const cart = await response.json();
+
+     const cartItemsMapped = cart.items.map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ({ product, quantity }: { product: any; quantity: number }) => ({
+          productId: product._id, // ID du produit
+          title: product.title, // Titre du produit
+          image: product.image, // Image du produit
+          quantity, // Quantité dans le panier
+          unitPrice: product.unitPrice, // Prix unitaire
+        })
+      );
+
+      setCartItems(cartItemsMapped);
+      setTotalAmount(cart.totalAmount);
+    };
+
+    fetchCart();
+  }, [token]);
   // Fonction pour ajouter un produit au panier
   const addItemToCart = async (productId: string) => {
     try {
@@ -72,6 +107,11 @@ const CartProvider: FC<PropsWithChildren> = ({ children }) => {
       
       // Récupération des données du panier mis à jour depuis la réponse
       const cart = await response.json();
+      
+      console.log('Cart data received:', cart);
+      if (cart.items && cart.items.length > 0) {
+        console.log('First cart item:', cart.items[0]);
+      }
 
       // Vérification si les données du panier sont valides
       if (!cart || !cart.items) {
@@ -83,12 +123,12 @@ const CartProvider: FC<PropsWithChildren> = ({ children }) => {
       // Transformation des données du panier pour correspondre au format attendu par le frontend
       const cartItemsMapped = cart.items.map(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ({ product, quantity }: { product: any; quantity: number }) => ({
+        ({ product, quantity, unitPrice }: { product: any; quantity: number; unitPrice: number }) => ({
           productId: product._id, // ID du produit
           title: product.title, // Titre du produit
           image: product.image, // Image du produit
           quantity, // Quantité dans le panier
-          unitPrice: product.unitPrice, // Prix unitaire
+          unitPrice: unitPrice || product.price, // Prix unitaire depuis le cart item ou produit
         })
       );
 
@@ -138,12 +178,12 @@ const CartProvider: FC<PropsWithChildren> = ({ children }) => {
         // Transformation des données du panier
         const cartItemsMapped = cart.items.map(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ({ product, quantity }: { product: any; quantity: number }) => ({
+          ({ product, quantity, unitPrice }: { product: any; quantity: number; unitPrice: number }) => ({
             productId: product._id,
             title: product.title,
             image: product.image,
             quantity,
-            unitPrice: product.unitPrice,
+            unitPrice: unitPrice || product.price, // Prix unitaire depuis le cart item ou produit
           })
         );
 

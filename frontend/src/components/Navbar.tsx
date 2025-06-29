@@ -26,6 +26,7 @@ import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import { useAuthContext } from '../context/Auth/AuthContext';
 import { Badge, Button, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from '../context/Cart/CartContext';
 
 // Configuration des options du menu utilisateur
 
@@ -41,6 +42,7 @@ function Navbar() {
   // Récupération des données d'authentification depuis le contexte
   const {username,isAuthenticated,logout} = useAuthContext();
   
+  const {cartItems} = useCart()
   // État local pour gérer l'ouverture/fermeture du menu utilisateur
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   // Hook pour la navigation
@@ -82,19 +84,20 @@ navigate('/login');
             {/* Container principal pour organiser les éléments de la navbar */}
             <Box sx={{ display: { xs: 'flex',flexDirection:'row' , justifyContent: 'space-between',alignItems:'center' ,width:'100%' }, mr: 1 }}>
             {/* Section gauche : Logo et nom de l'application */}
-            <Box sx={{ display: { xs: 'flex',flexDirection:'row',alignItems:'center' }, mr: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/')}>
                 {/* Icône de l'application */}
-                <AdbIcon sx={{ display: {md: 'flex' }, mr: 1 }} />
+                <AdbIcon sx={{ display: { xs: 'flex', md: 'flex' }, mr: 1, color: 'white' }} />
                 {/* Nom de l'application */}
                 <Typography
                     variant="h6"
                     noWrap
-                    component="a"
                     sx={{
-                    mr: 2,
-                    display: { xs: 'none', md: 'flex' },
-                    fontFamily: 'monospace',
-                    fontWeight: 700,
+                        mr: 2,
+                        display: { xs: 'flex', md: 'flex' },
+                        fontFamily: 'monospace',
+                        fontWeight: 700,
+                        color: 'white',
+                        textDecoration: 'none',
                     }}
                 >
                     Team office
@@ -105,7 +108,7 @@ navigate('/login');
           {/* Section droite : Menu utilisateur */}
           <Box  gap={4} display='flex' flexDirection='row' alignItems={'center'} justifyContent={'center'}>
            <IconButton aria-label="cart" color ="inherit" onClick={handleCart}>
-            <Badge badgeContent={4} color="secondary">
+            <Badge badgeContent={cartItems.length} color="secondary">
               <ShoppingCart />
             </Badge>
           </IconButton>

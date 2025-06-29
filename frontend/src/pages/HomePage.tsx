@@ -20,6 +20,10 @@
 // Imports des composants Material-UI pour la mise en page
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
 // Import du composant ProductCard pour afficher chaque produit
 import ProductCard from '../components/ProductCard';
 // Hooks React pour la gestion d'état et des effets de bord
@@ -40,6 +44,10 @@ import { Base_URL } from '../constants/baseUrl';
 const HomePage = () => {
     // État pour stocker la liste des produits récupérés depuis l'API
     const [products, setProducts] = useState<Product[]>([]);
+    // État pour gérer l'état de chargement
+    const [loading, setLoading] = useState<boolean>(true);
+    // État pour gérer les erreurs
+    const [error, setError] = useState<string | null>(null);
 
     // Hook useEffect pour récupérer les produits au montage du composant
     useEffect(() => {
@@ -49,17 +57,26 @@ const HomePage = () => {
          */
         const fetchProducts = async () => {
             try {
+                setLoading(true);
+                setError(null);
+                
                 // Requête GET vers l'endpoint des produits
                 const response = await fetch(`${Base_URL}/product`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                
                 // Conversion de la réponse en JSON
                 const data = await response.json();
-                // Log des données pour le débogage
-                console.log(data);
                 // Mise à jour de l'état avec les produits récupérés
                 setProducts(data);
             } catch (error) {
                 // Gestion des erreurs de réseau ou de parsing
                 console.error('Error fetching products:', error);
+                setError('Erreur lors du chargement des produits. Veuillez réessayer plus tard.');
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -69,21 +86,113 @@ const HomePage = () => {
 
     // Rendu du composant
     return (
-        <Container maxWidth="xl" sx={{ mt: 2, px: 1 }}>
-            {/* Grille container pour organiser les produits en colonnes responsives */}
-            <Grid container spacing={2} justifyContent="center">
-                {/* Mapping sur le tableau de produits pour créer une carte par produit */}
-                {products.map((p) => (
-                    <Grid size={{ xs: 12, md: 4 }} key={p._id}>
-                        {/* 
-                        ProductCard avec spread operator pour passer toutes les propriétés 
-                        du produit comme props au composant 
-                        */}
-                        <ProductCard {...p} />
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+            {/* En-tête de la page */}
+            <Box sx={{ textAlign: 'center', mb: 6 }}>
+                <Typography 
+                    variant="h3" 
+                    component="h1" 
+                    sx={{ 
+                        fontWeight: 'bold', 
+                        mb: 2,
+                        background: 'linear-gradient(45deg, #1976d2, #42a5f5)',
+                        backgroundClip: 'text',
+                        color: 'transparent',
+                    }}
+                >
+                    Nos Produits
+                </Typography>
+                <Typography 
+                    variant="h6" 
+                    color="text.secondary"
+                    sx={{ maxWidth: 600, mx: 'auto' }}
+                >
+                    Découvrez notre sélection de produits de qualité
+                </Typography>
+            </Box>
+
+            {/* Gestion des états de chargement et d'erreur */}
+            {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+                    <Box sx={{ textAlign: 'center' }}>
+                        <CircularProgress size={60} sx={{ mb: 2 }} />
+                        <Typography variant="h6" color="text.secondary">
+                            Chargement des produits...
+                        </Typography>
+                    </Box>
+                </Box>
+            ) : error ? (
+                <Box sx={{ mb: 4 }}>
+                    <Alert 
+                        severity="error" 
+                        sx={{ 
+                            borderRadius: 2,
+                            '& .MuiAlert-message': {
+                                width: '100%',
+                                textAlign: 'center'
+                            }
+                        }}
+                    >
+                        {error}
+                    </Alert>
+                </Box>
+            ) : products.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 8 }}>
+                    <Typography variant="h5" color="text.secondary" sx={{ mb: 2 }}>
+                        Aucun produit disponible
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                        Les produits seront bientôt disponibles !
+                    </Typography>
+                </Box>
+            ) : (
+                <>
+                    {/* Informations sur le nombre de produits */}
+                    <Box sx={{ mb: 4 }}>
+                        <Typography 
+                            variant="body1" 
+                            color="text.secondary"
+                            sx={{ textAlign: 'center' }}
+                        >
+                            {products.length} produit{products.length > 1 ? 's' : ''} disponible{products.length > 1 ? 's' : ''}
+                        </Typography>
+                    </Box>
+
+                    {/* Grille des produits */}
+                    <Grid container spacing={3} justifyContent="center">
+                        {products.map((product) => (
+                            <Grid 
+                                size={{ xs: 12, sm: 6, md: 4, lg: 3 }} 
+                                key={product._id}
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        width: '100%',
+                                        maxWidth: 320,
+                                        transition: 'transform 0.2s ease-in-out',
+                                        '&:hover': {
+                                            transform: 'translateY(-4px)',
+                                        }
+                                    }}
+                                >
+                                    <ProductCard {...product} />
+                                </Box>
+                            </Grid>
+                        ))}
                     </Grid>
-                ))}
-                {/* Commentaire pour d'éventuels tests de mise en page */}
-            </Grid>
+
+                    {/* Footer informatif */}
+                    <Box sx={{ textAlign: 'center', mt: 6, pt: 4, borderTop: '1px solid', borderColor: 'divider' }}>
+                        <Typography variant="body2" color="text.secondary">
+                            Tous nos produits sont soigneusement sélectionnés pour vous offrir la meilleure qualité
+                        </Typography>
+                    </Box>
+                </>
+            )}
         </Container>
     );
 };
