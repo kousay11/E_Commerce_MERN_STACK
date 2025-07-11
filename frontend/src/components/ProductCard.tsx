@@ -66,14 +66,26 @@ export default function ProductCard({ _id, title, image, price }: Props) {
   return (
     <>
       <Card sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: '0 12px 25px rgba(0, 0, 0, 0.15)',
         }
       }}>
-        <CardMedia sx={{ height: 200 }} image={image} title={title} />
-        <CardContent>
+        <CardMedia 
+          sx={{ 
+            height: 200,
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center'
+          }} 
+          image={image} 
+          title={title} 
+        />
+        <CardContent sx={{ flexGrow: 1 }}>
           <Typography gutterBottom variant="h5" component="div">
             {title}
           </Typography>

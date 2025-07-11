@@ -166,13 +166,17 @@ const HomePage = () => {
                                 key={product._id}
                                 sx={{
                                     display: 'flex',
-                                    justifyContent: 'center'
+                                    justifyContent: 'center',
+                                    alignItems: 'stretch'
                                 }}
                             >
                                 <Box
                                     sx={{
                                         width: '100%',
-                                        maxWidth: 320,
+                                        maxWidth: 300,
+                                        minWidth: 280,
+                                        display: 'flex',
+                                        flexDirection: 'column',
                                         transition: 'transform 0.2s ease-in-out',
                                         '&:hover': {
                                             transform: 'translateY(-4px)',
